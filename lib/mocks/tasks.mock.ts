@@ -23,4 +23,12 @@ export const tasksMock = [
     status: "pending" as "pending" | "in_progress" | "completed",
     dueTime: "22:15",
   },
+  {
+    id: "task-004",
+    title: "Cerrar novedad de acceso sur",
+    location: "Acceso Sur",
+    priority: "medium" as "high" | "medium" | "low",
+    status: "completed" as "pending" | "in_progress" | "completed",
+    dueTime: "19:40",
+  },
 ];

@@ -1,9 +1,5 @@
-import React from 'react'
+import { GuardTasksView } from "@/features/guard-tasks/guard-tasks-view";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
+export default function GuardiaTareasPage() {
+  return <GuardTasksView />;
 }
-
-export default page
