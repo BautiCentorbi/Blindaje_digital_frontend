@@ -1,16 +1,7 @@
 import Link from "next/link";
+import type { RoundItem } from "@/lib/mocks/rounds.mock";
 
-type Round = {
-  id: string;
-  name: string;
-  status: "scheduled" | "active" | "completed";
-  completedPoints: number;
-  totalPoints: number;
-  nextCheckpoint: string;
-  startedAt: string;
-};
-
-export function RoundsPreviewCard({ rounds }: { rounds: Round[] }) {
+export function RoundsPreviewCard({ rounds }: { rounds: RoundItem[] }) {
   return (
     <article className="rounded-[28px] border border-[#e7e7ee] bg-white p-6 shadow-[0_18px_50px_-30px_rgba(0,0,0,0.18)]">
       <div className="flex items-start justify-between gap-4">
@@ -31,9 +22,20 @@ export function RoundsPreviewCard({ rounds }: { rounds: Round[] }) {
 
       <div className="mt-5 space-y-3">
         {rounds.map((round) => {
-          const progress = Math.round(
-            (round.completedPoints / round.totalPoints) * 100
-          );
+          const completedPoints = round.checkpoints.filter(
+            (checkpoint) => checkpoint.status === "completed",
+          ).length;
+
+          const totalPoints = round.checkpoints.length;
+
+          const progress =
+            totalPoints > 0
+              ? Math.round((completedPoints / totalPoints) * 100)
+              : 0;
+
+          const nextCheckpoint =
+            round.checkpoints.find((checkpoint) => checkpoint.status === "pending")
+              ?.name ?? "Todos los checkpoints completados";
 
           return (
             <div
@@ -42,9 +44,11 @@ export function RoundsPreviewCard({ rounds }: { rounds: Round[] }) {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-[#1f1f24]">{round.name}</p>
+                  <p className="text-sm font-medium text-[#1f1f24]">
+                    {round.name}
+                  </p>
                   <p className="mt-1 text-sm text-[#666670]">
-                    Próximo checkpoint: {round.nextCheckpoint}
+                    Próximo checkpoint: {nextCheckpoint}
                   </p>
                 </div>
 
@@ -56,7 +60,7 @@ export function RoundsPreviewCard({ rounds }: { rounds: Round[] }) {
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between text-xs text-[#7b7b86]">
                   <span>
-                    {round.completedPoints}/{round.totalPoints} puntos
+                    {completedPoints}/{totalPoints} puntos
                   </span>
                   <span>{progress}%</span>
                 </div>
@@ -76,7 +80,7 @@ export function RoundsPreviewCard({ rounds }: { rounds: Round[] }) {
   );
 }
 
-function getRoundStatusClass(status: Round["status"]) {
+function getRoundStatusClass(status: RoundItem["status"]) {
   if (status === "active") {
     return "rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700";
   }
@@ -88,7 +92,7 @@ function getRoundStatusClass(status: Round["status"]) {
   return "rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700";
 }
 
-function getRoundStatusLabel(status: Round["status"]) {
+function getRoundStatusLabel(status: RoundItem["status"]) {
   if (status === "active") return "Activa";
   if (status === "scheduled") return "Programada";
   return "Finalizada";
