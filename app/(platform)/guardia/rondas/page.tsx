@@ -1,9 +1,5 @@
-import React from 'react'
+import { GuardRoundsView } from "@/features/guard-rounds/guard-round-view";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
+export default function GuardiaRondasPage() {
+  return <GuardRoundsView />;
 }
-
-export default page
