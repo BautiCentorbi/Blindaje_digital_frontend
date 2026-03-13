@@ -1,5 +1,5 @@
-import { GuardDashboardView } from "@/features/guard-dashboard/ui/guard-dashboard-view";
+import { GuardResponsiveHome } from "@/features/guard-dashboard/ui/guard-responsive-home";
 
 export default function GuardiaPage() {
-  return <GuardDashboardView />;
+  return <GuardResponsiveHome />;
 }
