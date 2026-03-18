@@ -1,9 +1,5 @@
-import React from 'react'
+import { GuardLogView } from "@/features/guard-log/ui/guard-log-view";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
+export default function GuardiaBitacoraPage() {
+  return <GuardLogView />;
 }
-
-export default page

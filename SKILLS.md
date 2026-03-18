@@ -5,6 +5,7 @@ This file is the root index of the available local skills and should be updated 
 
 ## Current Skills
 
+- `change-delivery-standard`: Standardize branch names, commit subjects, PR titles, and PR descriptions. Use when upcoming work should follow the repository's `bd-YYYYMMDD...` branch slug and `<type>(BD-YYYYMMDD): ...` delivery format.
 - `code-review`: Review repository changes for bugs, regressions, integration risks, and missing validation. Use when the request is for a review, risk check, PR audit, or verification of route, feature, auth, mock, navigation, or UI safety.
 - `design-system-maintainer`: Maintain and evolve the reusable UI system in this repository. Use when the request involves shared components, component APIs, variants, visual consistency, ownership boundaries, or consolidation across `shared/ui/`, `components/`, and feature UI.
 - `frontend-design`: Create distinctive, production-grade frontend interfaces for this Next.js repository. Use when the request involves pages, components, layouts, dashboards, styling, responsive behavior, interaction quality, or stronger visual direction.
