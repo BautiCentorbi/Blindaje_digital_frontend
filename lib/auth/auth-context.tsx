@@ -1,15 +1,19 @@
-"use client";
+﻿"use client";
 
 import {
   createContext,
   useContext,
-  useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
 } from "react";
 import { SessionUser } from "./auth-types";
 import { authenticateUser } from "./auth-utils";
-import { clearSession, getSession, saveSession } from "./auth-storage";
+import {
+  clearSession,
+  getSession,
+  saveSession,
+  subscribeToSessionChange,
+} from "./auth-storage";
 
 interface AuthContextValue {
   user: SessionUser | null;
@@ -20,15 +24,22 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+function subscribeToHydrationState() {
+  return () => {};
+}
 
-  useEffect(() => {
-    const session = getSession();
-    setUser(session);
-    setIsLoading(false);
-  }, []);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const user = useSyncExternalStore(
+    subscribeToSessionChange,
+    getSession,
+    () => null,
+  );
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydrationState,
+    () => true,
+    () => false,
+  );
+  const isLoading = !isHydrated;
 
   async function login(email: string, password: string) {
     const authenticatedUser = authenticateUser(email, password);
@@ -38,14 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     saveSession(authenticatedUser);
-    setUser(authenticatedUser);
-
     return authenticatedUser;
   }
 
   function logout() {
     clearSession();
-    setUser(null);
   }
 
   const value = useMemo(
@@ -55,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
     }),
-    [user, isLoading]
+    [user, isLoading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -70,3 +78,4 @@ export function useAuth() {
 
   return context;
 }
+

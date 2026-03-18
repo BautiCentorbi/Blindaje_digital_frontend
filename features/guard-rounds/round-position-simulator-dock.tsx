@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, MapPinned, LocateFixed } from "lucide-react";
+import { ChevronDown, ChevronUp, LocateFixed } from "lucide-react";
 import type { RoundCheckpoint } from "@/lib/mocks/rounds.mock";
 
 type RoundPositionSimulatorDockProps = {

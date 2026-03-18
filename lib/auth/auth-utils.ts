@@ -12,8 +12,15 @@ export function authenticateUser(email: string, password: string): SessionUser |
 
   if (!user) return null;
 
-  const { password: _password, ...sessionUser } = user;
-  return sessionUser;
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    propertyId: user.propertyId,
+    shift: user.shift,
+    status: user.status,
+  };
 }
 
 export function getDefaultRouteByRole(role: UserRole): string {
