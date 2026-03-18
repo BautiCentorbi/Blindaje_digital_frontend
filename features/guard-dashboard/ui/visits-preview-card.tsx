@@ -1,14 +1,7 @@
 import Link from "next/link";
+import type { VisitItem } from "@/lib/mocks/visits.mock";
 
-type Visit = {
-  id: string;
-  visitorName: string;
-  residentName: string;
-  status: "pending" | "approved" | "checked_in";
-  expectedTime: string;
-};
-
-export function VisitsPreviewCard({ visits }: { visits: Visit[] }) {
+export function VisitsPreviewCard({ visits }: { visits: VisitItem[] }) {
   return (
     <article className="rounded-[28px] border border-[#e7e7ee] bg-white p-6 shadow-[0_18px_50px_-30px_rgba(0,0,0,0.18)]">
       <div className="flex items-start justify-between gap-4">
@@ -58,7 +51,7 @@ export function VisitsPreviewCard({ visits }: { visits: Visit[] }) {
   );
 }
 
-function getVisitStatusClass(status: Visit["status"]) {
+function getVisitStatusClass(status: VisitItem["status"]) {
   if (status === "pending") {
     return "rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700";
   }
@@ -67,11 +60,21 @@ function getVisitStatusClass(status: Visit["status"]) {
     return "rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700";
   }
 
-  return "rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700";
+  if (status === "checked_in") {
+    return "rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700";
+  }
+
+  if (status === "checked_out") {
+    return "rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700";
+  }
+
+  return "rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700";
 }
 
-function getVisitStatusLabel(status: Visit["status"]) {
+function getVisitStatusLabel(status: VisitItem["status"]) {
   if (status === "pending") return "Pendiente";
   if (status === "approved") return "Autorizada";
-  return "En sitio";
+  if (status === "checked_in") return "En sitio";
+  if (status === "checked_out") return "Finalizada";
+  return "Rechazada";
 }

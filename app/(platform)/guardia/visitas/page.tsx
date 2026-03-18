@@ -1,9 +1,5 @@
-import React from 'react'
+import { GuardVisitsView } from "@/features/guard-visits/guard-visits-view";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
+export default function GuardiaVisitasPage() {
+  return <GuardVisitsView />;
 }
-
-export default page
