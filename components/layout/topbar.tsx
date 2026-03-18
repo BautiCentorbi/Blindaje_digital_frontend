@@ -3,6 +3,7 @@
 import { Bell, Search, Menu, ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import { useGuardVisits } from "@/features/guard-visits/guard-visits-provider";
 
 function getPageTitle(pathname: string) {
   if (pathname === "/guardia") return "Panel";
@@ -30,6 +31,7 @@ function getPageDescription(pathname: string) {
 
 export function Topbar() {
   const pathname = usePathname();
+  const { openDetectionsModal, pendingDetectionsCount } = useGuardVisits();
 
   return (
     <header className="sticky top-0 z-30 border-b border-[#e8e8ef]/80 bg-[#f4f4f6]/85 backdrop-blur-xl">
@@ -71,11 +73,18 @@ export function Topbar() {
 
           <button
             type="button"
+            onClick={openDetectionsModal}
             className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[#e4e4ea] bg-white text-[#4c4c56] transition hover:border-violet-200 hover:text-[#6D28D9]"
-            aria-label="Notificaciones"
+            aria-label="Abrir revisiones automáticas"
           >
             <Bell className="h-5 w-5" />
-            <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[#6D28D9]" />
+            {pendingDetectionsCount > 0 ? (
+              <span className="absolute right-2 top-2 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-[#6D28D9] px-1 text-[10px] font-semibold text-white">
+                {pendingDetectionsCount}
+              </span>
+            ) : (
+              <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[#6D28D9]" />
+            )}
           </button>
 
           <button

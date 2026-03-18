@@ -132,6 +132,7 @@ adding, or removing code.
 
 - Treat `.agents/skills/` as the source directory for repository-local skills.
 - Treat `SKILLS.md` in the repository root as the human-readable index of local skills.
+- Use the `change-delivery-standard` skill when a request asks to standardize or prepare branch names, commit subjects, PR titles, or PR descriptions for upcoming changes.
 - When creating a new skill, update all affected control files in the same task:
   - create or update `.agents/skills/<skill-name>/SKILL.md`
   - update `SKILLS.md`
@@ -180,6 +181,13 @@ For skill-related requests:
 3. Update `SKILLS.md` so the repository index reflects the current skill set.
 4. Update `AGENTS.md` when the new skill introduces a standing repository rule or workflow expectation.
 5. Verify the skill path, frontmatter, and index entry are aligned.
+
+For branch, commit, and PR naming requests:
+
+1. derive one shared `BD-YYYYMMDD` token for the change set unless the user supplies a different ticket identifier
+2. use `bd-YYYYMMDD-short-scope` for the branch slug
+3. use `<type>(BD-YYYYMMDD): imperative summary` for the commit subject and PR title unless the user asks for a different PR title strategy
+4. write PR descriptions with `Summary`, `Changes`, `Validation`, and `Notes`
 
 ## Validation Checklist
 

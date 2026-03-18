@@ -1,24 +1,15 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
-import {
-  visitsMock,
-  type VisitItem,
-  type VisitStatus,
-} from "@/lib/mocks/visits.mock";
-import {
-  detectionsMock,
-  type DetectionItem,
-} from "@/lib/mocks/detections.mock";
+import { type VisitItem, type VisitStatus } from "@/lib/mocks/visits.mock";
 import {
   ManualEntryModal,
   type ManualEntryPayload,
 } from "./manual-entry-modal";
-import { DetectionsModal } from "./detections-modal";
 import { VisitsToolbar } from "./visits-toolbar";
 import { VisitsList } from "./visits-list";
 import { VisitDetailModal } from "./visit-detail-modal";
-import { DetectionReviewModal } from "./detection-review-modal";
+import { useGuardVisits } from "./guard-visits-provider";
 
 type VisitFilter = "all" | "pending" | "active" | "checked_out" | "rejected";
 
@@ -36,16 +27,20 @@ function getCurrentHourMinute() {
 
 export function GuardVisitsView() {
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
-  const [isDetectionsModalOpen, setIsDetectionsModalOpen] = useState(false);
-  const [visits, setVisits] = useState<VisitItem[]>(visitsMock);
-  const [detections, setDetections] = useState<DetectionItem[]>(detectionsMock);
   const [activeFilter, setActiveFilter] = useState<VisitFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(null);
-  const [selectedDetectionId, setSelectedDetectionId] = useState<string | null>(
-    null,
-  );
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
+  const {
+    visits,
+    pendingDetectionsCount,
+    openDetectionsModal,
+    approveVisit,
+    rejectVisit,
+    checkInVisit,
+    checkOutVisit,
+    addManualVisit,
+  } = useGuardVisits();
 
   const searchedVisits = useMemo(() => {
     const normalized = searchTerm.trim().toLowerCase();
@@ -94,49 +89,6 @@ export function GuardVisitsView() {
     [visits],
   );
 
-  const pendingDetections = useMemo(
-    () => detections.filter((detection) => detection.status === "pending_review"),
-    [detections],
-  );
-  const orderedDetections = useMemo(
-    () =>
-      [...detections].sort((left, right) => {
-        if (left.status === right.status) {
-          return right.detectedAt.localeCompare(left.detectedAt);
-        }
-
-        if (left.status === "pending_review") return -1;
-        if (right.status === "pending_review") return 1;
-        if (left.status === "approved") return -1;
-        if (right.status === "approved") return 1;
-        return 0;
-      }),
-    [detections],
-  );
-
-  function updateVisitStatus(visitId: string, status: VisitStatus) {
-    setVisits((current) =>
-      current.map((visit) =>
-        visit.id === visitId
-          ? {
-              ...visit,
-              status,
-              horaIngreso:
-                status === "checked_in"
-                  ? visit.horaIngreso ?? getCurrentHourMinute()
-                  : visit.horaIngreso,
-              horaSalida:
-                status === "checked_out"
-                  ? getCurrentHourMinute()
-                  : status === "checked_in"
-                    ? undefined
-                    : visit.horaSalida,
-            }
-          : visit,
-      ),
-    );
-  }
-
   function handleManualEntrySubmit(payload: ManualEntryPayload) {
     const newVisit: VisitItem = {
       id: `visit-${crypto.randomUUID()}`,
@@ -153,24 +105,8 @@ export function GuardVisitsView() {
       status: "pending",
     };
 
-    setVisits((current) => [newVisit, ...current]);
+    addManualVisit(newVisit);
     setIsManualEntryOpen(false);
-  }
-
-  function handleApprove(visitId: string) {
-    updateVisitStatus(visitId, "approved");
-  }
-
-  function handleReject(visitId: string) {
-    updateVisitStatus(visitId, "rejected");
-  }
-
-  function handleCheckIn(visitId: string) {
-    updateVisitStatus(visitId, "checked_in");
-  }
-
-  function handleCheckOut(visitId: string) {
-    updateVisitStatus(visitId, "checked_out");
   }
 
   function handleView(visitId: string) {
@@ -178,61 +114,8 @@ export function GuardVisitsView() {
     setIsVisitModalOpen(true);
   }
 
-  function handleReviewDetection(detectionId: string) {
-    setIsDetectionsModalOpen(false);
-    setSelectedDetectionId(detectionId);
-  }
-
-  function handleApproveDetection(detectionId: string, visitId?: string) {
-    setDetections((current) =>
-      current.map((detection) =>
-        detection.id === detectionId
-          ? { ...detection, status: "approved" }
-          : detection,
-      ),
-    );
-
-    if (visitId) {
-      updateVisitStatus(visitId, "checked_in");
-    }
-
-    setSelectedDetectionId(null);
-  }
-
-  function handleRejectDetection(detectionId: string) {
-    setDetections((current) =>
-      current.map((detection) =>
-        detection.id === detectionId
-          ? { ...detection, status: "rejected" }
-          : detection,
-      ),
-    );
-
-    setSelectedDetectionId(null);
-  }
-
   const selectedVisit =
     visits.find((visit) => visit.id === selectedVisitId) ?? null;
-
-  const selectedDetection =
-    detections.find((detection) => detection.id === selectedDetectionId) ??
-    null;
-  const nextPendingDetection = pendingDetections[0] ?? null;
-  const autoDetectionReview =
-    !isManualEntryOpen &&
-    !isVisitModalOpen &&
-    !isDetectionsModalOpen &&
-    !selectedDetectionId
-      ? nextPendingDetection
-      : null;
-  const detectionInReview = selectedDetection ?? autoDetectionReview;
-  const suggestedVisit = detectionInReview?.suggestedVisitId
-    ? (visits.find(
-        (visit) => visit.id === detectionInReview.suggestedVisitId,
-      ) ?? null)
-    : null;
-  const requiresDetectionDecision =
-    detectionInReview?.status === "pending_review" && !selectedDetectionId;
 
   return (
     <>
@@ -262,12 +145,12 @@ export function GuardVisitsView() {
 
             <button
               type="button"
-              onClick={() => setIsDetectionsModalOpen(true)}
+              onClick={openDetectionsModal}
               className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-medium text-[#6D28D9] transition hover:bg-violet-100"
             >
               Registro automático
               <span className="rounded-full bg-white px-2 py-0.5 text-xs">
-                {pendingDetections.length}
+                {pendingDetectionsCount}
               </span>
             </button>
           </div>
@@ -286,10 +169,10 @@ export function GuardVisitsView() {
             <VisitsList
               visits={filteredVisits}
               activeFilter={activeFilter}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              onCheckIn={handleCheckIn}
-              onCheckOut={handleCheckOut}
+              onApprove={approveVisit}
+              onReject={rejectVisit}
+              onCheckIn={checkInVisit}
+              onCheckOut={checkOutVisit}
               onView={handleView}
             />
           </div>
@@ -312,9 +195,9 @@ export function GuardVisitsView() {
             <div className="rounded-[28px] border border-[#e7e7ee] bg-white p-5 shadow-[0_18px_50px_-30px_rgba(0,0,0,0.18)]">
               <p className="text-sm font-medium text-[#6D28D9]">Criterio UI</p>
               <p className="mt-3 text-sm leading-6 text-[#666670]">
-                Cada detección automática se eleva como revisión obligatoria.
-                El registro conserva aprobaciones, denegaciones e ingresos
-                automáticos de propietarios.
+                Las detecciones automáticas siguen activas en toda la app. El
+                guardia puede revisar, aprobar o rechazar ingresos desde
+                cualquier módulo del turno.
               </p>
             </div>
           </div>
@@ -325,22 +208,6 @@ export function GuardVisitsView() {
         open={isVisitModalOpen}
         visit={selectedVisit}
         onClose={() => setIsVisitModalOpen(false)}
-      />
-
-      <DetectionReviewModal
-        open={Boolean(detectionInReview)}
-        detection={detectionInReview}
-        suggestedVisit={suggestedVisit}
-        onClose={() => setSelectedDetectionId(null)}
-        onApprove={handleApproveDetection}
-        onReject={handleRejectDetection}
-        requireDecision={requiresDetectionDecision}
-      />
-      <DetectionsModal
-        open={isDetectionsModalOpen}
-        detections={orderedDetections}
-        onClose={() => setIsDetectionsModalOpen(false)}
-        onReview={handleReviewDetection}
       />
 
       <ManualEntryModal

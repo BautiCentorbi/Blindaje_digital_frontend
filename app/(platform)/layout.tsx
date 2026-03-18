@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/layout/app-shell";
+import { GuardVisitsProvider } from "@/features/guard-visits/guard-visits-provider";
 import { ProtectedRoute } from "@/lib/auth/protected-route";
 
 export default function PlatformLayout({
@@ -8,7 +9,9 @@ export default function PlatformLayout({
 }) {
   return (
     <ProtectedRoute>
-      <AppShell>{children}</AppShell>
+      <GuardVisitsProvider>
+        <AppShell>{children}</AppShell>
+      </GuardVisitsProvider>
     </ProtectedRoute>
   );
 }
